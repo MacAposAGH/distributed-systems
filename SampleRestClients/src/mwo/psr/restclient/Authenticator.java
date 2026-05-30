@@ -2,6 +2,8 @@ package mwo.psr.restclient;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.stream.Stream;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.MultivaluedMap;
@@ -12,12 +14,14 @@ public class Authenticator implements ClientRequestFilter {
     private final String user;
     private final String password;
 
+
     public Authenticator(String user, String password) {
         this.user = user;
         this.password = password;
     }
 
     public void filter(ClientRequestContext requestContext) throws IOException {
+        float a = (float)Arrays.stream(new int[]{1, 2, 3}).average().orElse(0);
         MultivaluedMap<String, Object> headers = requestContext.getHeaders();
         final String basicAuthentication = getBasicAuthentication();
         headers.add("Authorization", basicAuthentication);

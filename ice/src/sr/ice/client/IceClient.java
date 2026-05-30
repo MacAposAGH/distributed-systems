@@ -25,7 +25,8 @@ public class IceClient {
             if(base1 == null) { //powyższa opcja się nie uda, gdy nie był wskazany plik konfiguracyjny (--Ice.Config=client.config)
                 // 2. Uzyskanie referencji obiektu - to samo co powyżej, ale mniej ładnie
                 System.out.println("(using a hard-coded configuration)");
-                base1 = communicator.stringToProxy("calc/calc11:tcp -h 172.29.35.113 -p 10000 -z : udp -h 172.29.35.113 -p 10000 -z"); //opcja -z włącza możliwość kompresji wiadomości
+//                base1 = communicator.stringToProxy("calc/calc11:tcp -h 172.29.35.113 -p 10000 -z : udp -h 172.29.35.113 -p 10000 -z"); //opcja -z włącza możliwość kompresji wiadomości
+                base1 = communicator.stringToProxy("calc/calc11:tcp -h 127.0.0.2 -p 10000 -z : udp -h 127.0.0.2 -p 10000 -z"); //opcja -z włącza możliwość kompresji wiadomości
             }
 
 			// 3. Rzutowanie, zawężanie (do typu Calc)
