@@ -5,6 +5,8 @@ import Demo.Calc;
 import Demo.NoInput;
 import com.zeroc.Ice.Current;
 
+import java.util.Arrays;
+
 public class CalcI implements Calc {
     private static final long serialVersionUID = -2448962912780867770L;
     long counter = 0;
@@ -46,10 +48,6 @@ public class CalcI implements Calc {
 
     @Override
     public float avg(long[] numbers, Current current) throws NoInput {
-        float sum = 0L;
-        for (long number : numbers) {
-            sum += number;
-        }
-        return sum / numbers.length;
+        return (float) Arrays.stream(numbers).boxed().mapToInt(Long::intValue).average().orElse(0);
     }
 }
