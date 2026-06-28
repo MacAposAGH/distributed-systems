@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "sr.grpc.gen";
+option java_outer_classname = "StudentProto";
+
+package student;
+
+
+message Student {
+  int32 id = 1;
+  string name = 2;
+}
+
+enum SubjectName {
+  BIOLOGY = 0;
+  ENGLISH = 1;
+  GEOGRAPHY = 2;
+  MATH = 3;
+}
+
+message Grade {
+  int32 id = 1;
+  double grade = 2;
+  SubjectName subject = 3;
+  Student student = 4;
+}
+
+message StudentNameOpArguments {
+  string name = 1;
+}
+
+message GradesOpResult {
+  repeated Grade grades = 1;
+}
+
+service GradeBook {
+  rpc GetAllGrades (StudentNameOpArguments) returns (GradesOpResult) {}
+}
