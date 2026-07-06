@@ -1,0 +1,21 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package tutorial;
+
+option java_package = "sr.serialization.proto";
+option java_outer_classname = "WeatherProto";
+
+message Weather {
+
+  message City {
+    string name = 1;
+  }
+
+  google.protobuf.Timestamp date = 1;
+  City city = 2;
+  double temperature = 3;
+  double wind = 4;
+  double chanceOfPrecipitation = 5;
+  double cloudy = 6;
+}

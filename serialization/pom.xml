@@ -8,7 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>edu.lab</groupId>
-    <artifactId>serialization-comparison</artifactId>
+    <artifactId>serialization-demo</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
 
