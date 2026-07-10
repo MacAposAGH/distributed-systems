@@ -11,9 +11,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
 public class Serializer implements Runnable {
@@ -57,7 +55,9 @@ public class Serializer implements Runnable {
                 .setCity(forecastPojo.getCity());
         for (WeatherPojo weatherPojo : forecastPojo.getWeatherPojos()) {
             Weather weather = Weather.newBuilder()
-                    .setDate(Timestamp.newBuilder().setSeconds(Instant.now().getEpochSecond()).build())
+                    .setDate(Timestamp.newBuilder()
+                            .setSeconds(weatherPojo.getDate().atStartOfDay().getSecond())
+                            .build())
                     .setTemperature(weatherPojo.getTemperature())
                     .setCloudy(weatherPojo.getCloudy())
                     .setChanceOfPrecipitation(weatherPojo.getChanceOfPrecipitation())
@@ -88,10 +88,10 @@ public class Serializer implements Runnable {
         double minTemperature = 10;
         double maxTemperature = 35;
         double temperature = round(minTemperature + (maxTemperature - minTemperature) * random.nextDouble());
+        double wind = round(20 * random.nextDouble());
         double cloudy = round(100 * random.nextDouble());
         double chanceOfPrecipitation = round(cloudy * random.nextDouble());
-        double wind = round(20 * random.nextDouble());
-        return new WeatherPojo(date, temperature, cloudy, chanceOfPrecipitation, wind);
+        return new WeatherPojo(date, temperature,wind, cloudy, chanceOfPrecipitation);
     }
 
     private double round(double number) {
