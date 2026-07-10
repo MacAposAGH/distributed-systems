@@ -43,7 +43,6 @@ public class GrpcClient {
     }
 
     private void run() throws InterruptedException {
-
         final String grades = "grades";
         final String gpa = "gpa";
         final String bestSubject = "best-subject";

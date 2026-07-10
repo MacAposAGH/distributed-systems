@@ -1,22 +1,22 @@
-package sr.unicast;
+package sr.serialization;
 
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Timestamp;
-import sr.serialization.proto.WeatherProto;
-import sr.serialization.proto.WeatherProto.Weather;
-import sr.serialization.proto.WeatherProto.Weather.City;
+import sr.serialization.proto.ForecastProto.City;
+import sr.serialization.proto.ForecastProto.Forecast;
+import sr.serialization.proto.ForecastProto.Weather;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
 public class Serializer implements Runnable {
     private final DatagramSocket socket;
+    private final Random random = new Random();
 
     public Serializer() throws SocketException {
         this.socket = new DatagramSocket(4445);
@@ -50,29 +50,35 @@ public class Serializer implements Runnable {
         }
     }
 
-    private double round(double number) {
-        double pow = Math.pow(10, 2);
-        return Math.round(number * pow) / pow;
+    private byte[] serialize(String cityName) {
+        Forecast.Builder builder = Forecast.newBuilder()
+                .setCity(City.newBuilder().setName(cityName).build());
+        for (int i = 0; i < 3; i++) {
+            builder.addForecast(generateWeather(i));
+        }
+        return builder.build().toByteArray();
     }
 
-    private byte[] serialize(String cityName) {
-        Random random = new Random();
-        Timestamp date = Timestamp.newBuilder().setSeconds(Instant.now().getEpochSecond()).build();
-        City city = WeatherProto.Weather.City.newBuilder().setName(cityName).build();
+    private double round(double number) {
+        return Math.round(number * 10) / 10.0;
+    }
+
+    private Weather generateWeather(int day) {
+        Timestamp date = Timestamp.newBuilder()
+                .setSeconds(Instant.now().plus(day, ChronoUnit.DAYS).getEpochSecond())
+                .build();
         double minTemperature = 10;
         double maxTemperature = 35;
         double temperature = round(minTemperature + (maxTemperature - minTemperature) * random.nextDouble());
         double cloudy = round(100 * random.nextDouble());
         double chanceOfPrecipitation = round(cloudy * random.nextDouble());
         double wind = round(20 * random.nextDouble());
-        Weather weather = Weather.newBuilder()
-                .setCity(city)
+        return Weather.newBuilder()
                 .setDate(date)
                 .setTemperature(temperature)
                 .setCloudy(cloudy)
                 .setChanceOfPrecipitation(chanceOfPrecipitation)
                 .setWind(wind)
                 .build();
-        return weather.toByteArray();
     }
 }

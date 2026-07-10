@@ -1,7 +1,9 @@
-package sr.unicast;
+package sr.serialization;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import sr.serialization.proto.WeatherProto.Weather;
+import sr.serialization.proto.ForecastProto;
+import sr.serialization.proto.ForecastProto.Forecast;
+import sr.serialization.proto.ForecastProto.Weather;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -32,13 +34,15 @@ public class UnicastClient {
             System.out.println("A packet received from server");
             byte[] data = Arrays.copyOf(packet.getData(), packet.getLength());
 
-            Weather deserializedWeather;
+            Forecast deserializedForecast;
             try {
-                deserializedWeather= Weather.parseFrom(data);
+                deserializedForecast = Forecast.parseFrom(data);
             } catch (InvalidProtocolBufferException e) {
                 throw new InvalidProtocolBufferException(e);
             }
-            System.out.printf("Deserialization complete: \n%s\n", deserializedWeather);
+            System.out.println("Deserialization complete");
+            ForecastPojo forecastPojo = new ForecastPojo(deserializedForecast);
+            System.out.println(forecastPojo);
 
         } catch (IOException e) {
             System.err.println(e.getMessage());
