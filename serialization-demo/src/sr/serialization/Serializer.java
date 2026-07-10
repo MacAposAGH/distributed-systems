@@ -1,7 +1,6 @@
 package sr.serialization;
 
 import com.google.protobuf.Timestamp;
-import sr.serialization.proto.ForecastProto.City;
 import sr.serialization.proto.ForecastProto.Forecast;
 import sr.serialization.proto.ForecastProto.Weather;
 
@@ -10,7 +9,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
@@ -36,8 +38,8 @@ public class Serializer implements Runnable {
             int port = packet.getPort();
             String payload = new String(packet.getData(), packet.getOffset(), packet.getLength());
             System.out.printf("A packet received from: %s : %s, payload: %s\n", address.getHostAddress(), port, payload);
-
-            byte[] bytesResponse = serialize(payload);
+            ForecastPojo forecastPojo = generateForecast(payload);
+            byte[] bytesResponse = serialize(forecastPojo);
             System.out.println("Serialization completed");
 
             packet = new DatagramPacket(bytesResponse, bytesResponse.length, packet.getAddress(), packet.getPort());
@@ -50,35 +52,50 @@ public class Serializer implements Runnable {
         }
     }
 
-    private byte[] serialize(String cityName) {
+    private byte[] serialize(ForecastPojo forecastPojo) {
         Forecast.Builder builder = Forecast.newBuilder()
-                .setCity(City.newBuilder().setName(cityName).build());
-        for (int i = 0; i < 3; i++) {
-            builder.addForecast(generateWeather(i));
+                .setCity(forecastPojo.getCity());
+        for (WeatherPojo weatherPojo : forecastPojo.getWeatherPojos()) {
+            Weather weather = Weather.newBuilder()
+                    .setDate(Timestamp.newBuilder().setSeconds(Instant.now().getEpochSecond()).build())
+                    .setTemperature(weatherPojo.getTemperature())
+                    .setCloudy(weatherPojo.getCloudy())
+                    .setChanceOfPrecipitation(weatherPojo.getChanceOfPrecipitation())
+                    .setWind(weatherPojo.getWind())
+                    .build();
+            builder.addForecast(weather);
         }
+        builder.build();
         return builder.build().toByteArray();
     }
 
-    private double round(double number) {
-        return Math.round(number * 10) / 10.0;
+    private ForecastPojo generateForecast(String city) {
+        ForecastPojo forecastPojo = new ForecastPojo(city);
+        for (int i = 0; i < 3; i++) {
+            forecastPojo.addWeather(generateWeatherPojo(i));
+        }
+        Path path = Path.of("forecast.txt");
+        try {
+            Files.writeString(path, forecastPojo.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return forecastPojo;
     }
 
-    private Weather generateWeather(int day) {
-        Timestamp date = Timestamp.newBuilder()
-                .setSeconds(Instant.now().plus(day, ChronoUnit.DAYS).getEpochSecond())
-                .build();
+    private WeatherPojo generateWeatherPojo(int day) {
+        LocalDate date = LocalDate.now().plusDays(day);
         double minTemperature = 10;
         double maxTemperature = 35;
         double temperature = round(minTemperature + (maxTemperature - minTemperature) * random.nextDouble());
         double cloudy = round(100 * random.nextDouble());
         double chanceOfPrecipitation = round(cloudy * random.nextDouble());
         double wind = round(20 * random.nextDouble());
-        return Weather.newBuilder()
-                .setDate(date)
-                .setTemperature(temperature)
-                .setCloudy(cloudy)
-                .setChanceOfPrecipitation(chanceOfPrecipitation)
-                .setWind(wind)
-                .build();
+        return new WeatherPojo(date, temperature, cloudy, chanceOfPrecipitation, wind);
     }
+
+    private double round(double number) {
+        return Math.round(number * 10) / 10.0;
+    }
+
 }
